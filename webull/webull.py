@@ -121,7 +121,7 @@ class webull :
         return headers
 
 
-    def login(self, username='', password='', device_name='', mfa='', question_id='', question_answer='', save_token=False, token_path=None):
+    def login(self, username='', password='', device_name='', mfa='', question_id='', question_answer='', save_token=False, token_path=None, accessToken=None, refreshToken=None, tokenExpire=None, uuidVal=None, accountId=None):
         '''
         Login with email or phone number
 
@@ -129,6 +129,18 @@ class webull :
         US '+1-XXXXXXX'
         CH '+86-XXXXXXXXXXX'
         '''
+        if accessToken and refreshToken and uuidVal and accountId:
+            self._access_token = accessToken
+            self._refresh_token = refreshToken
+            self._token_expire = '2099-01-01T00:00:00.000+0000'
+            self._uuid = uuidVal
+            self._account_id = accountId
+            return {
+                "accessToken": self._access_token,
+                "refreshToken": self._refresh_token,
+                "tokenExpireTime": self._token_expire,
+                "uuid": self._uuid,
+            }
 
         if not username or not password:
             raise ValueError('username or password is empty')
@@ -163,18 +175,6 @@ class webull :
 
         if question_id != '' and question_answer != '' :
             data['accessQuestions'] = '[{"questionId":"' + str(question_id) + '", "answer":"' + str(question_answer) + '"}]'
-
-        response = requests.post(self._urls.login(), json=data, headers=headers, timeout=self.timeout)
-        result = response.json()
-        if 'accessToken' in result :
-            self._access_token = result['accessToken']
-            self._refresh_token = result['refreshToken']
-            self._token_expire = result['tokenExpireTime']
-            self._uuid = result['uuid']
-            self._account_id = self.get_account_id()
-            if save_token:
-                self._save_token(result, token_path)
-        return result
 
     def get_mfa(self, username='') :
         account_type = self.get_account_type(username)
