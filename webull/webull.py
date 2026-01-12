@@ -59,48 +59,14 @@ class webull :
         self.zone_var = 'dc_core_r001'
         self.timeout = 15
 
-    def _get_did(self, path=''):
-        '''
-        Makes a unique device id from a random uuid (uuid.uuid4).
-        if the pickle file doesn't exist, this func will generate a random 32 character hex string
-        uuid and save it in a pickle file for future use. if the file already exists it will
-        load the pickle file to reuse the did. Having a unique did appears to be very important
-        for the MQTT web socket protocol
+    def _get_did(self, path=None):
+        # Just return a random UUID in memory. 
+        # It will be overwritten by set_did() from your .env immediately anyway.
+        return uuid.uuid4().hex
 
-        path: path to did.bin. For example _get_did('cache') will search for cache/did.bin instead.
-
-        :return: hex string of a 32 digit uuid
-        '''
-        filename = 'did.bin'
-        if path:
-            filename = os.path.join(path, filename)
-        if os.path.exists(filename):
-            did = pickle.load(open(filename,'rb'))
-        else:
-            did = uuid.uuid4().hex
-            pickle.dump(did, open(filename, 'wb'))
-        return did
-
-    def set_did(self, did, path=''):
-        '''
-        If your starting to use this package after webull's new image verification for login, you'll
-        need to login from a browser to get your did file in order to login through this api. You can
-        find your did file by using this link:
-
-        https://github.com/tedchou12/webull/wiki/Workaround-for-Login
-
-        and then headers tab instead of response head, and finally look for the did value from the
-        request headers.
-
-        Then, you can run this program to save your did into did.bin so that it can be accessed in the
-        future without the did explicitly being in your code.
-
-        path: path to did.bin. For example _get_did('cache') will search for cache/did.bin instead.
-        '''
-        filename = 'did.bin'
-        if path:
-            filename = os.path.join(path, filename)
-        pickle.dump(did, open(filename, 'wb'))
+    def set_did(self, did, path=None):
+        self._did = did
+        # We removed the pickle.dump lines here
         return True
 
     def build_req_headers(self, include_trade_token=False, include_time=False, include_zone_var=True):
